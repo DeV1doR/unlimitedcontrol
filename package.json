@@ -1,0 +1,13 @@
+{
+    "name": "unlimitedcontrol",
+    "version": "0.0.1",
+    "description": "Lion Hunt extension",
+    "scripts": {
+      "build": "zip -9 -r unlimitedcontrol.zip content_scripts icons/ popup/ background.js manifest.json"
+    },
+    "dependencies": {
+    },
+    "devDependencies": {
+    }
+  }
+  

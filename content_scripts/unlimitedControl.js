@@ -39,7 +39,7 @@ const clearList = () => {
 };
 
 const getProfileImageMarkUp = ({ attributes }) => {
-  const { picture } = attributes[0].miniProfile;
+  const { picture } = attributes[0]['*miniProfile'];
   const isImageExists = picture && picture['com.linkedin.common.VectorImage'];
   const imageClass = `lazy-image ivm-view-attr__img--centered EntityPhoto-circle-4  presence-entity__image EntityPhoto-circle-4 loaded ${
     isImageExists ? '' : 'ghost-person'
@@ -89,7 +89,6 @@ const createProfileBlock = (
     console.error('<Unlimited Control> No uc-results-list leement found on the page, during createProfileBlock');
     return;
   }
-
   const imageMarkUp = getProfileImageMarkUp(image);
   const profileLink = navigationUrl || `/in/${publicIdentifier}/`;
   const socialProofMarkUp = getSocialProofMarkUp(socialProofText);
@@ -209,10 +208,22 @@ const getCSRFToken = () => {
 
 const sendRequest = (URL, settings = {}, callback) => {
   const csrfToken = getCSRFToken();
+  const appConfig = JSON.parse(unescape(document.querySelector('meta[name="extended/config/environment"]').content));
   const fetchSettings = {
     ...settings,
     headers: {
       'csrf-token': csrfToken,
+      'accept': 'application/vnd.linkedin.normalized+json+2.1',
+      'x-li-lang': document.querySelector('meta[name="i18nLocale"]').content,
+      'x-li-page-instance': document.querySelector('#clientPageInstance').textContent.trim(),
+      'x-li-track': {
+          "clientVersion": appConfig.appVersion,
+          "osName": "web",
+          "timezoneOffset": 3,
+          "deviceFormFactor": appConfig.deviceFormFactor,
+          "mpName": "voyager-web"
+      },
+      'x-restli-protocol-version': '2.0.0'
     },
   };
 
@@ -327,6 +338,8 @@ const profileActionsCallback = response => {
   response
     .json()
     .then(({ results }) => {
+      if (!results) return;
+
       Object.keys(results).forEach(profileActionsID => {
         const { overflowActions, primaryAction, secondaryAction } = results[profileActionsID];
 
@@ -396,7 +409,7 @@ const fetchProfilesCallback = response => {
     .json()
     .then(data => {
       console.log(data);
-      const { elements: globalElements, metadata } = data;
+      const { elements: globalElements, metadata } = data.data;
       const { totalResultCount } = metadata;
 
       clearList();
